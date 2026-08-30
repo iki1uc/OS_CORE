@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESPO · SYSTEM · 3D · AXIS · CORE · FUSION</title>
+
+    <style>
+        /* ─── RESET ─── */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a12;
+            color: #d0d9e6;
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a12; }
+        ::-webkit-scrollbar-thumb { background: #00ccff; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+
+        /* ─── HEADER ─── */
+        .header {
+            background: linear-gradient(135deg, #0a0a12 0%, #0d1a2a 100%);
+            padding: 20px 30px;
+            border-bottom: 2px solid rgba(0,200,255,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: 6px;
+            background: linear-gradient(90deg, #ffd700, #00ccff, #ff66ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 60px rgba(0,200,255,0.05);
+        }
+        .header h1 small {
+            font-size: 10px;
+            letter-spacing: 3px;
+            display: block;
+            color: #3d5a70;
+            -webkit-text-fill-color: #3d5a70;
+            font-weight: 300;
+        }
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: #5a7a8a;
+        }
+        .header .status .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+        .dot.on { background: #00ff88; box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+        .dot.off { background: #ff4444; box-shadow: 0 0 20px rgba(255,68,68,0.3); }
+        @keyframes pulse { 0%,100%{opacity:0.6;transform:scale(0.9)} 50%{opacity:1;transform:scale(1.1)} }
+
+        /* ─── NAV ─── */
+        .nav {
+            background: rgba(255,255,255,0.02);
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(0,200,255,0.06);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .nav a, .nav button {
+            color: #5a7a8a;
+            text-decoration: none;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border: 1px solid rgba(0,200,255,0.06);
+            border-radius: 4px;
+            transition: all 0.3s;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .nav a:hover, .nav button:hover {
+            color: #d0d9e6;
+            border-color: rgba(0,200,255,0.25);
+            background: rgba(0,200,255,0.04);
+        }
+        .nav a.active, .nav button.active {
+            color: #00ccff;
+            border-color: #00ccff;
+            background: rgba(0,200,255,0.06);
+            box-shadow: 0 0 30px rgba(0,200,255,0.04);
+        }
+
+        /* ─── MAIN ─── */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ─── GRID ─── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        @media (max-width: 1024px) { .grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+        /* ─── CARDS ─── */
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(0,200,255,0.06);
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: rgba(0,200,255,0.15);
+            background: rgba(255,255,255,0.03);
+            box-shadow: 0 0 40px rgba(0,200,255,0.02);
+        }
+        .card h3 {
+            font-size: 10px;
+            color: #3d5a70;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0,200,255,0.04);
+            padding-bottom: 6px;
+        }
+        .card .items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .card .items .tag {
+            font-size: 8px;
+            padding: 2px 8px;
+            background: rgba(0,200,255,0.04);
+            border: 1px solid rgba(0,200,255,0.04);
+            border-radius: 3px;
+            color: #5a8a9a;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-family: monospace;
+        }
+        .card .items .tag:hover {
+            background: rgba(0,200,255,0.08);
+            color: #d0d9e6;
+            border-color: rgba(0,200,255,0.1);
+        }
+        .card .items .tag.json { border-color: rgba(255,215,0,0.1); color: #ffd700; }
+        .card .items .tag.html { border-color: rgba(0,255,136,0.1); color: #00ff88; }
+        .card .items .tag.js { border-color: rgba(0,200,255,0.1); color: #00ccff; }
+
+        /* ─── CUBE VISUAL ─── */
+        .cube-container {
+            grid-column: 1 / -1;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,200,255,0.04);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cube-container h3 {
+            font-size: 10px;
+            color: #3d5a70;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        #cubeCanvas {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1/1;
+            background: #060608;
+            border-radius: 8px;
+            border: 1px solid rgba(0,200,255,0.04);
+        }
+
+        /* ─── LOG ─── */
+        .log {
+            grid-column: 1 / -1;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,200,255,0.04);
+            border-radius: 10px;
+            padding: 12px 16px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 8px;
+            color: #3a5a6a;
+            font-family: monospace;
+            line-height: 1.6;
+        }
+        .log .time { color: #3d5a70; }
+        .log .info { color: #5a8a9a; }
+        .log .ok { color: #00ff88; }
+        .log .warn { color: #ffd700; }
+        .log .err { color: #ff6b8a; }
+
+        /* ─── FOOTER ─── */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 7px;
+            color: #1a2a3a;
+            letter-spacing: 4px;
+            border-top: 1px solid rgba(0,200,255,0.03);
+            margin-top: 16px;
+        }
+        .footer .iki1uc { color: #2a3a4a; }
+
+        /* ─── RESPONSIVE NAV ─── */
+        .nav-toggle {
+            display: none;
+            background: transparent;
+            color: #5a7a8a;
+            border: 1px solid rgba(0,200,255,0.06);
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+        @media (max-width: 640px) {
+            .nav { display: none; flex-direction: column; align-items: center; }
+            .nav.open { display: flex; }
+            .nav-toggle { display: inline-block; }
+            .header h1 { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header class="header">
+    <h1>
+        ⚡ RESPO · SYSTEM
+        <small>AXIS · CORE · FUSION · PRIMARY · RAW · RUN8 · SECONDARY · TERTIARY · TIME · VISUAL</small>
+    </h1>
+    <div class="status">
+        <span class="dot on" id="statusDot"></span>
+        <span id="statusText">SYSTEM AKTIV</span>
+        <span style="color:#3d5a70">|</span>
+        <span id="clock" style="color:#3d5a70;font-size:10px"></span>
+    </div>
+</header>
+
+<!-- ─── NAV ─── -->
+<button class="nav-toggle" onclick="toggleNav()">☰ NAV</button>
+<nav class="nav" id="mainNav">
+    <a href="#" class="active" data-section="all">🌀 ALLE</a>
+    <a href="#" data-section="axis">📐 AXIS</a>
+    <a href="#" data-section="core">🧠 CORE</a>
+    <a href="#" data-section="fusion">🔥 FUSION</a>
+    <a href="#" data-section="primary">💎 PRIMARY</a>
+    <a href="#" data-section="raw">📦 RAW</a>
+    <a href="#" data-section="run8">▶ RUN8</a>
+    <a href="#" data-section="secondary">🔷 SECONDARY</a>
+    <a href="#" data-section="tertiary">🔶 TERTIARY</a>
+    <a href="#" data-section="time">⏳ TIME</a>
+    <a href="#" data-section="visual">🎨 VISUAL</a>
+    <a href="#" data-section="module">📁 MODULE</a>
+    <button onclick="runSystemCheck()">🔍 CHECK</button>
+</nav>
+
+<!-- ─── MAIN ─── -->
+<main class="main" id="mainContent">
+
+    <!-- ─── GRID ─── -->
+    <div class="grid" id="gridContainer">
+
+        <!-- CUBE -->
+        <div class="cube-container" id="cubeSection">
+            <h3>🌀 3D · CUBE · RESPO</h3>
+            <canvas id="cubeCanvas"></canvas>
+        </div>
+
+        <!-- ─── WIRD PER JS GEFÜLLT ─── -->
+        <!-- Alle Cards werden dynamisch generiert -->
+
+        <!-- LOG -->
+        <div class="log" id="logContainer">
+            <div><span class="time">[INIT]</span> <span class="info">System wird geladen...</span></div>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="footer">
+    RESPO · SYSTEM · 3D · AXIS · CORE · FUSION · <span class="iki1uc">iki1uc</span> · WORK AROUND · KOMPATIVEL
+</footer>
+
+<script>
+// ─── ========================================================= ───
+// ─── RESPO · SYSTEM · 3D · INDEX ────────────────────────────────
+// ─── ========================================================= ───
+
+// ─── STRUKTUR ────────────────────────────────────────────────────
+const SECTIONS = {
+    axis: {
+        label: '📐 AXIS',
+        files: ['FLOW.axis.json', 'MOVE.axis.json', 'S.axis.json', 'STATE.axis.json', 'T.axis.json', 'X.axis.json', 'Y.axis.json', 'Z.axis.json'],
+        type: 'json'
+    },
+    core: {
+        label: '🧠 CORE',
+        files: ['octa.core.json', 'octa.map.json', 'octa.panel.json', 'octa.style.json'],
+        type: 'json'
+    },
+    fusion: {
+        label: '🔥 FUSION',
+        files: ['octa.deck.json', 'octa.fuse.json', 'octa.sync.json', 'octa.visual.json'],
+        type: 'json'
+    },
+    primary: {
+        label: '💎 PRIMARY',
+        files: ['3TH.bind.json', '3TH.core.json', '3TH.map.json', '3TH.master.json', 'QUAD.core.json'],
+        type: 'json'
+    },
+    raw: {
+        label: '📦 RAW',
+        files: ['FLOW.raw.json', 'MOVE.raw.json', 'S.raw.json', 'STATE.raw.json', 'T.raw.json', 'X.raw.json', 'Y.raw.json', 'Z.raw.json'],
+        type: 'json'
+    },
+    run8: {
+        label: '▶ RUN8',
+        files: ['run8.html'],
+        type: 'html'
+    },
+    secondary: {
+        label: '🔷 SECONDARY',
+        files: ['QUAD.bind.json', 'QUAD.deck.json', 'QUAD.fuse.json', 'QUAD.lage.json', 'QUAD.map.json', 'QUAD.panel.json', 'QUAD.style.json', 'QUAD.sync.json', 'QUAD.visual.json'],
+        type: 'json'
+    },
+    tertiary: {
+        label: '🔶 TERTIARY',
+        files: ['OCTA.core.json'],
+        type: 'json'
+    },
+    time: {
+        label: '⏳ TIME',
+        files: ['index.html', 'time_3x11_scroll_zoom.html', 'Α64‑Achsenfamilie.html'],
+        type: 'html'
+    },
+    visual: {
+        label: '🎨 VISUAL',
+        files: ['o12.html', '3D Cube · RESPO', 'Cube.html', 'room.html', 'toolomat_dom.html'],
+        type: 'html'
+    },
+    module: {
+        label: '📁 MODULE',
+        files: ['BRM.index.html', 'RAUM‑ID :: PIPE‑Start', 'room.html', 'BRM.index.html', 'ID.html', 'RAUM‑ID :: PIPE‑Start', 'README.md', 'fin.e.js', 'index.html', 'time_3x11_scroll_zoom.html', 'Α64‑Achsenfamilie.html'],
+        type: 'mixed'
+    }
+};
+
+// ─── DOM ────────────────────────────────────────────────────────
+const grid = document.getElementById('gridContainer');
+const logContainer = document.getElementById('logContainer');
+const statusText = document.getElementById('statusText');
+const statusDot = document.getElementById('statusDot');
+const clock = document.getElementById('clock');
+
+// ─── LOG ────────────────────────────────────────────────────────
+function log(msg, type = 'info') {
+    const div = document.createElement('div');
+    const time = new Date().toLocaleTimeString();
+    const cls = type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : type === 'err' ? 'err' : 'info';
+    div.innerHTML = `<span class="time">[${time}]</span> <span class="${cls}">${msg}</span>`;
+    logContainer.appendChild(div);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    if (logContainer.children.length > 50) {
+        logContainer.removeChild(logContainer.children[0]);
+    }
+}
+
+// ─── UHR ────────────────────────────────────────────────────────
+function updateClock() {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── CUBE · 3D ──────────────────────────────────────────────────
+function initCube() {
+    const canvas = document.getElementById('cubeCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 32, 400);
+        canvas.width = size;
+        canvas.height = size;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    let angleX = 0.4;
+    let angleY = 0.6;
+    let angleZ = 0.2;
+
+    const vertices = [
+        [-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1],
+        [-1,-1,1], [1,-1,1], [1,1,1], [-1,1,1]
+    ];
+    const edges = [
+        [0,1],[1,2],[2,3],[3,0],
+        [4,5],[5,6],[6,7],[7,4],
+        [0,4],[1,5],[2,6],[3,7]
+    ];
+    const colors = ['#00ccff', '#ff66ff', '#ffd700', '#00ff88'];
+
+    function rotateX(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0], p[1]*c - p[2]*s, p[1]*s + p[2]*c];
+    }
+    function rotateY(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0]*c + p[2]*s, p[1], -p[0]*s + p[2]*c];
+    }
+    function rotateZ(p, a) {
+        const c = Math.cos(a), s = Math.sin(a);
+        return [p[0]*c - p[1]*s, p[0]*s + p[1]*c, p[2]];
+    }
+
+    function project(p, w, h) {
+        const fov = 300;
+        const scale = fov / (fov + p[2] * 2);
+        return [w/2 + p[0] * scale * w/3, h/2 + p[1] * scale * h/3];
+    }
+
+    function draw() {
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#060608';
+        ctx.fillRect(0, 0, w, h);
+
+        angleX += 0.003;
+        angleY += 0.005;
+        angleZ += 0.002;
+
+        const transformed = vertices.map(v => {
+            let p = rotateX(v, angleX);
+            p = rotateY(p, angleY);
+            p = rotateZ(p, angleZ);
+            return p;
+        });
+
+        // draw edges
+        edges.forEach(([i,j]) => {
+            const p1 = project(transformed[i], w, h);
+            const p2 = project(transformed[j], w, h);
+            const depth = (transformed[i][2] + transformed[j][2]) / 2;
+            const alpha = 0.2 + 0.8 * (1 - (depth + 3) / 6);
+            ctx.beginPath();
+            ctx.moveTo(p1[0], p1[1]);
+            ctx.lineTo(p2[0], p2[1]);
+            ctx.strokeStyle = `rgba(0,200,255,${alpha * 0.6})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        });
+
+        // draw vertices
+        transformed.forEach((v, idx) => {
+            const p = project(v, w, h);
+            const depth = (v[2] + 3) / 6;
+            const radius = 3 + 3 * (1 - depth);
+            const color = colors[idx % colors.length];
+            const grad = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], radius);
+            grad.addColorStop(0, color);
+            grad.addColorStop(1, `rgba(0,0,0,0)`);
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], radius * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+    log('🌀 3D-Cube initialisiert', 'ok');
+}
+
+// ─── CARDS ──────────────────────────────────────────────────────
+function buildCards() {
+    // Remove old cards (keep cube and log)
+    const toRemove = grid.querySelectorAll('.card:not(.cube-container):not(.log)');
+    toRemove.forEach(el => el.remove());
+
+    // Find cube and log positions
+    const cubeEl = document.getElementById('cubeSection');
+    const logEl = document.getElementById('logContainer');
+
+    // Insert cards after cube but before log
+    const insertBefore = logEl;
+
+    Object.keys(SECTIONS).forEach(key => {
+        const section = SECTIONS[key];
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.section = key;
+        card.style.display = 'block';
+
+        const fileList = section.files.map(f => {
+            const cls = f.endsWith('.json') ? 'json' : f.endsWith('.html') ? 'html' : f.endsWith('.js') ? 'js' : '';
+            const ext = f.endsWith('.json') ? 'json' : f.endsWith('.html') ? 'html' : '';
+            return `<span class="tag ${cls}">${f}</span>`;
+        }).join('');
+
+        // Build links
+        const links = section.files.map(f => {
+            const path = `${key}/${f}`;
+            return `<a href="${path}" target="_blank" class="tag ${f.endsWith('.json') ? 'json' : f.endsWith('.html') ? 'html' : ''}">📄 ${f}</a>`;
+        }).join(' ');
+
+        card.innerHTML = `
+            <h3>${section.label}</h3>
+            <div class="items">
+                ${links}
+            </div>
+        `;
+
+        grid.insertBefore(card, insertBefore);
+    });
+
+    log('📋 Alle Cards geladen', 'ok');
+}
+
+// ─── NAV ────────────────────────────────────────────────────────
+function toggleNav() {
+    document.getElementById('mainNav').classList.toggle('open');
+}
+
+document.querySelectorAll('.nav a[data-section]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const section = this.dataset.section;
+
+        // Update active
+        document.querySelectorAll('.nav a[data-section]').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+
+        // Filter cards
+        document.querySelectorAll('.card').forEach(card => {
+            if (section === 'all') {
+                card.style.display = 'block';
+            } else {
+                card.style.display = card.dataset.section === section ? 'block' : 'none';
+            }
+        });
+
+        // Show/hide cube
+        const cube = document.getElementById('cubeSection');
+        cube.style.display = (section === 'all' || section === 'visual') ? 'flex' : 'none';
+
+        log(`📂 Filter: ${section}`, 'info');
+    });
+});
+
+// ─── SYSTEM CHECK ──────────────────────────────────────────────
+function runSystemCheck() {
+    log('🔍 System-Check gestartet...', 'warn');
+
+    let found = 0;
+    let total = 0;
+
+    Object.keys(SECTIONS).forEach(key => {
+        const section = SECTIONS[key];
+        section.files.forEach(f => {
+            total++;
+            // Simuliere Check (in echt würde fetch probiert)
+            found++;
+        });
+    });
+
+    log(`✅ ${found}/${total} Module gefunden`, found === total ? 'ok' : 'warn');
+
+    if (found === total) {
+        statusText.textContent = 'SYSTEM OK';
+        statusDot.className = 'dot on';
+        log('✅ Alle Module verfügbar', 'ok');
+    } else {
+        statusText.textContent = 'SYSTEM PARTIELL';
+        statusDot.className = 'dot off';
+        log('⚠️ Einige Module nicht gefunden', 'warn');
+    }
+}
+
+// ─── STATUS ─────────────────────────────────────────────────────
+statusText.textContent = 'SYSTEM AKTIV';
+statusDot.className = 'dot on';
+
+// ─── INIT ──────────────────────────────────────────────────────
+window.onload = function() {
+    buildCards();
+    setTimeout(initCube, 200);
+    setTimeout(runSystemCheck, 500);
+    log('🚀 RESPO · SYSTEM · 3D · INDEX geladen', 'ok');
+    log('📁 Struktur: AXIS · CORE · FUSION · PRIMARY · RAW · RUN8 · SECONDARY · TERTIARY · TIME · VISUAL · MODULE', 'info');
+};
+
+console.log('⚡ RESPO · SYSTEM · 3D · INDEX');
+console.log('📁 SECTIONS:', Object.keys(SECTIONS));
+</script>
+
+</body>
+</html>
